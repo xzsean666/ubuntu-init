@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 install_ssh() {
+  if ! is_dry_run && ssh_ready && [[ "${HARDEN_SSH:-0}" != "1" && -z "${SSH_PUBLIC_KEY:-}" ]]; then
+    skip_step "OpenSSH server and client are already installed."
+    return $?
+  fi
+
   apt_install openssh-server openssh-client || return $?
 
   if has_systemd; then
@@ -19,6 +24,15 @@ install_ssh() {
   fi
 
   configure_authorized_key "$SSH_PUBLIC_KEY"
+}
+
+ssh_ready() {
+  apt_package_installed openssh-server || return 1
+  apt_package_installed openssh-client || return 1
+  if has_systemd; then
+    systemctl is-enabled --quiet ssh 2>/dev/null || return 1
+    systemctl is-active --quiet ssh 2>/dev/null || return 1
+  fi
 }
 
 configure_authorized_key() {

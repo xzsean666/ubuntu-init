@@ -66,6 +66,12 @@ Dry run logs the commands but does not install packages, write system config, or
 For install checks, dry run behaves like a fresh machine so the planned commands are visible even if your current machine already has the tool installed.
 Dry run does not prove that remote apt repositories, GitHub releases, npm packages, or vendor download URLs are currently reachable.
 
+## Already Installed Software
+
+Normal runs skip software that is already installed. Apt packages are filtered before `apt-get install`, so only missing packages are installed. Tool modules such as Docker, Node.js, pnpm, uv, GitHub CLI, AI CLIs, Chrome, VS Code, BaoTa, and optional desktop apps return `[SKIPPED]` when the command or installation marker already exists.
+
+Modules that also manage configuration, such as SSH hardening, authorized SSH keys, Docker group membership, and China mirror configuration, still apply the requested configuration even when the main package is already present.
+
 ## Testing This Repo
 
 ```bash

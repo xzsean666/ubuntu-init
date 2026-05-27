@@ -10,7 +10,9 @@ npm_global_install() {
     return $?
   fi
   if ! is_dry_run && nvm_shell 60 "command -v '$command_name' >/dev/null 2>&1"; then
-    log_info "$command_name is already installed."
+    nvm_shell 120 "('$command_name' --version || '$command_name' -v || true)"
+    skip_step "$command_name is already installed."
+    return $?
   else
     nvm_shell "$DOWNLOAD_TIMEOUT" "npm --fetch-retries=2 --fetch-timeout=300000 install -g '$package@latest'" || return $?
   fi
@@ -23,12 +25,14 @@ install_codex_cli() {
 
 install_claude_cli() {
   require_non_root_target "Claude Code CLI" || return $?
-  apt_install ca-certificates curl || return $?
 
   if ! is_dry_run && run_user_shell 60 'export PATH="$HOME/.local/bin:$PATH"; command -v claude >/dev/null 2>&1'; then
-    run_user_shell 120 'export PATH="$HOME/.local/bin:$PATH"; claude --version || claude -v || true'
-    return 0
+    run_user_shell 120 'export PATH="$HOME/.local/bin:$PATH"; claude --version || claude -v || true' || true
+    skip_step "Claude Code CLI is already installed for $TARGET_USER."
+    return $?
   fi
+
+  apt_install ca-certificates curl || return $?
 
   append_user_file_if_missing "$TARGET_HOME/.bashrc" "ubuntu-bootstrap local bin" '# ubuntu-bootstrap local bin
 export PATH="$HOME/.local/bin:$PATH"'
@@ -53,15 +57,18 @@ export PATH="$HOME/.local/bin:$PATH"'
 
 install_antigravity_cli() {
   require_non_root_target "Antigravity CLI" || return $?
+
+  if ! is_dry_run && run_user_shell 60 'export PATH="$HOME/.local/bin:$PATH"; command -v agy >/dev/null 2>&1'; then
+    run_user_shell 120 'export PATH="$HOME/.local/bin:$PATH"; agy --version || true' || true
+    skip_step "Antigravity CLI is already installed for $TARGET_USER."
+    return $?
+  fi
+
   apt_install ca-certificates curl || return $?
 
   append_user_file_if_missing "$TARGET_HOME/.bashrc" "ubuntu-bootstrap local bin" '# ubuntu-bootstrap local bin
 export PATH="$HOME/.local/bin:$PATH"'
 
-  if ! is_dry_run && run_user_shell 60 'export PATH="$HOME/.local/bin:$PATH"; command -v agy >/dev/null 2>&1'; then
-    log_info "agy is already installed."
-  else
-    run_downloaded_user_script https://antigravity.google/cli/install.sh bash || return $?
-  fi
+  run_downloaded_user_script https://antigravity.google/cli/install.sh bash || return $?
   run_user_shell 120 'export PATH="$HOME/.local/bin:$PATH"; command -v agy && (agy --version || true)'
 }

@@ -2,8 +2,8 @@
 
 install_baota() {
   if [[ -d /www/server/panel ]]; then
-    log_info "BaoTa panel appears to be installed at /www/server/panel."
-    return 0
+    skip_step "BaoTa panel is already installed at /www/server/panel."
+    return $?
   fi
 
   apt_install ca-certificates curl wget || return $?

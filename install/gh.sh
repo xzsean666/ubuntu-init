@@ -5,8 +5,9 @@ install_gh() {
   local keyring_sha256="${GH_KEYRING_SHA256-6084d5d7bd8e288441e0e94fc6275570895da18e6751f70f057485dc2d1a811b}"
 
   if ! is_dry_run && command_exists gh; then
-    run_cmd 120 gh --version
-    return 0
+    run_cmd 120 gh --version || true
+    skip_step "GitHub CLI is already installed."
+    return $?
   fi
 
   apt_install ca-certificates curl gnupg || return $?

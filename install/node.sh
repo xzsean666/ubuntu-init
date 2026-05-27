@@ -25,6 +25,12 @@ nvm_shell() {
 
 install_node() {
   require_non_root_target "Node.js" || return $?
+  if ! is_dry_run && nvm_shell 60 'command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1'; then
+    nvm_shell 120 'node --version && npm --version' || true
+    skip_step "Node.js and npm are already installed for $TARGET_USER."
+    return $?
+  fi
+
   apt_install ca-certificates curl git build-essential python3 || return $?
 
   local nvm_version install_url
@@ -58,6 +64,12 @@ install_pnpm() {
   require_non_root_target "pnpm" || return $?
   if ! nvm_shell 60 'command -v npm >/dev/null 2>&1'; then
     fail_step "npm is not available; run the node module first."
+    return $?
+  fi
+
+  if ! is_dry_run && nvm_shell 60 'command -v pnpm >/dev/null 2>&1'; then
+    nvm_shell 120 'pnpm --version' || true
+    skip_step "pnpm is already installed for $TARGET_USER."
     return $?
   fi
 

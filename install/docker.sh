@@ -3,7 +3,11 @@
 
 install_docker() {
   if ! is_dry_run && docker_ready; then
-    log_info "Docker, compose, and buildx are already available."
+    log_info "Skipping Docker Engine install; Docker, compose, and buildx are already available."
+    if docker_group_ready && ! is_china_network; then
+      skip_step "Docker, compose, and buildx are already installed."
+      return $?
+    fi
   else
     install_docker_engine || return $?
   fi
@@ -28,6 +32,11 @@ docker_ready() {
   command_exists docker || return 1
   docker buildx version >/dev/null 2>&1 || return 1
   docker compose version >/dev/null 2>&1 || return 1
+}
+
+docker_group_ready() {
+  [[ "$TARGET_USER" == "root" ]] && return 0
+  id -nG "$TARGET_USER" 2>/dev/null | tr ' ' '\n' | grep -qx docker
 }
 
 install_docker_engine() {

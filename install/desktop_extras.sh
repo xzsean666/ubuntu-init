@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
 install_slack() {
-  if ! is_dry_run && command_exists slack; then
-    run_cmd 120 slack --version || true
-    return 0
+  if ! is_dry_run && { command_exists slack || { command_exists snap && snap list slack >/dev/null 2>&1; }; }; then
+    if command_exists slack; then
+      run_cmd 120 slack --version || true
+    fi
+    skip_step "Slack is already installed."
+    return $?
   fi
   if ! has_systemd; then
     skip_step "Slack snap install requires systemd/snapd."
@@ -23,8 +26,8 @@ install_wechat() {
   fi
 
   if ! is_dry_run && { command_exists wechat || command_exists weixin; }; then
-    log_info "WeChat appears to be installed."
-    return 0
+    skip_step "WeChat is already installed."
+    return $?
   fi
 
   url="${WECHAT_DEB_URL:-https://dldir1.qq.com/weixin/Universal/Linux/WeChatLinux_x86_64.deb}"
@@ -38,8 +41,8 @@ install_wechat() {
 
 install_clash_verge() {
   if ! is_dry_run && { command_exists clash-verge || command_exists clash-verge-service; }; then
-    log_info "Clash Verge appears to be installed."
-    return 0
+    skip_step "Clash Verge is already installed."
+    return $?
   fi
 
   local arch pattern url
@@ -83,6 +86,11 @@ install_clash_verge() {
 }
 
 install_youdao_note() {
+  if ! is_dry_run && { command_exists youdao-note || command_exists youdaonote; }; then
+    skip_step "Youdao Note is already installed."
+    return $?
+  fi
+
   if [[ -z "${YOUDAO_DEB_URL:-}" ]]; then
     skip_step "No stable official unattended Linux download URL is configured; set YOUDAO_DEB_URL to install."
     return $?
@@ -96,6 +104,11 @@ install_youdao_note() {
 }
 
 install_navicat() {
+  if ! is_dry_run && { command_exists navicat || command_exists navicat-premium; }; then
+    skip_step "Navicat is already installed."
+    return $?
+  fi
+
   if [[ -z "${NAVICAT_DEB_URL:-}" ]]; then
     skip_step "Navicat is proprietary and versioned; set NAVICAT_DEB_URL to install your licensed package."
     return $?

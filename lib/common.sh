@@ -308,6 +308,17 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+apt_package_installed() {
+  dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -qx "install ok installed"
+}
+
+filter_missing_apt_packages() {
+  local package
+  for package in "$@"; do
+    apt_package_installed "$package" || printf "%s\n" "$package"
+  done
+}
+
 has_systemd() {
   [[ -d /run/systemd/system ]] && command_exists systemctl
 }
@@ -320,6 +331,18 @@ apt_update() {
 
 apt_install() {
   (($# > 0)) || return 0
+  local -a missing=()
+  if ! is_dry_run; then
+    mapfile -t missing < <(filter_missing_apt_packages "$@")
+    if ((${#missing[@]} == 0)); then
+      log_info "Skipping apt install; packages already installed: $*"
+      return 0
+    fi
+    if ((${#missing[@]} < $#)); then
+      log_info "Skipping already installed apt packages; installing missing packages: ${missing[*]}"
+    fi
+    set -- "${missing[@]}"
+  fi
   if [[ "$APT_UPDATED" != "1" ]]; then
     apt_update || return $?
   fi

@@ -3,6 +3,10 @@
 
 install_fcitx5() {
   require_non_root_target "Fcitx5 Chinese input" || return $?
+  if ! is_dry_run && command_exists fcitx5; then
+    skip_step "Fcitx5 is already installed."
+    return $?
+  fi
 
   apt_install \
     fcitx5 \
@@ -34,8 +38,9 @@ install_chrome() {
   fi
 
   if ! is_dry_run && { command_exists google-chrome || command_exists google-chrome-stable; }; then
-    run_cmd 120 google-chrome --version || run_cmd 120 google-chrome-stable --version
-    return 0
+    run_cmd 120 google-chrome --version || run_cmd 120 google-chrome-stable --version || true
+    skip_step "Google Chrome is already installed."
+    return $?
   fi
 
   apt_install ca-certificates curl gnupg || return $?
@@ -83,8 +88,9 @@ install_vscode() {
   esac
 
   if ! is_dry_run && command_exists code; then
-    run_cmd 120 code --version
-    return 0
+    run_cmd 120 code --version || true
+    skip_step "VS Code is already installed."
+    return $?
   fi
 
   apt_install ca-certificates curl gnupg || return $?
