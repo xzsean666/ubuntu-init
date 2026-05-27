@@ -551,19 +551,40 @@ configure_apt_mirror_if_needed() {
     return 1
   fi
 
+  local ports_mirror=""
+  if [[ "$UBUNTU_APT_MIRROR" == *"mirrors.tuna.tsinghua.edu.cn/ubuntu"* ]]; then
+    ports_mirror="https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports"
+  elif [[ "$UBUNTU_APT_MIRROR" == *"mirrors.ustc.edu.cn/ubuntu"* ]]; then
+    ports_mirror="https://mirrors.ustc.edu.cn/ubuntu-ports"
+  elif [[ "$UBUNTU_APT_MIRROR" == *"mirrors.aliyun.com/ubuntu"* ]]; then
+    ports_mirror="https://mirrors.aliyun.com/ubuntu-ports"
+  else
+    if [[ "$UBUNTU_APT_MIRROR" == */ubuntu ]]; then
+      ports_mirror="${UBUNTU_APT_MIRROR}-ports"
+    else
+      ports_mirror="$UBUNTU_APT_MIRROR"
+    fi
+  fi
+
   for file in "${files[@]}"; do
     [[ -f "$file" ]] || continue
     existing="$(read_root_file "$file")" || continue
-    if ! grep -Eq 'https?://([a-z]{2}\.)?archive\.ubuntu\.com/ubuntu/?|https?://security\.ubuntu\.com/ubuntu/?' <<<"$existing"; then
-      log_info "Skipping apt mirror rewrite for $file; no default Ubuntu archive URLs found."
+    if ! grep -Eq 'https?://([a-z]{2}\.)?archive\.ubuntu\.com/ubuntu/?|https?://security\.ubuntu\.com/ubuntu/?|https?://ports\.ubuntu\.com/ubuntu-ports/?' <<<"$existing"; then
+      log_info "Skipping apt mirror rewrite for $file; no default Ubuntu archive or ports URLs found."
       continue
     fi
 
     mirror_escaped="${UBUNTU_APT_MIRROR%/}/"
     mirror_escaped="${mirror_escaped//&/\\&}"
+
+    local ports_mirror_escaped
+    ports_mirror_escaped="${ports_mirror%/}/"
+    ports_mirror_escaped="${ports_mirror_escaped//&/\\&}"
+
     updated="$(sed -E \
       -e "s|https?://([a-z]{2}\\.)?archive\\.ubuntu\\.com/ubuntu/?|$mirror_escaped|g" \
       -e "s|https?://security\\.ubuntu\\.com/ubuntu/?|$mirror_escaped|g" \
+      -e "s|https?://ports\\.ubuntu\\.com/ubuntu-ports/?|$ports_mirror_escaped|g" \
       <<<"$existing")"
 
     if [[ "$updated" == "$existing" ]]; then

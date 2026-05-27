@@ -68,6 +68,13 @@ install_docker_engine() {
   codename="$(. /etc/os-release && echo "${UBUNTU_CODENAME:-${VERSION_CODENAME:-}}")"
   [[ -n "$codename" ]] || return 1
 
+  if [[ "$codename" == "plucky" ]] && ! is_dry_run; then
+    if ! curl -fsSI "https://download.docker.com/linux/ubuntu/dists/$codename/" >/dev/null 2>&1; then
+      log_warn "Docker stable repository does not yet support Ubuntu $codename (26.04). Falling back to noble (24.04 LTS) repository."
+      codename="noble"
+    fi
+  fi
+
   write_root_file 0644 /etc/apt/sources.list.d/docker.list \
     "deb [arch=$arch signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $codename stable
 "

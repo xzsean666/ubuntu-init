@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016
 
-npm_global_install() {
+pnpm_global_install() {
   local package="$1"
   local command_name="$2"
   require_non_root_target "$command_name" || return $?
-  if ! nvm_shell 60 'command -v npm >/dev/null 2>&1'; then
-    fail_step "npm is not available; run the node module first."
+  if ! nvm_shell 60 'command -v pnpm >/dev/null 2>&1'; then
+    fail_step "pnpm is not available; run the pnpm module first."
     return $?
   fi
   if ! is_dry_run && nvm_shell 60 "command -v '$command_name' >/dev/null 2>&1"; then
@@ -14,13 +14,13 @@ npm_global_install() {
     skip_step "$command_name is already installed."
     return $?
   else
-    nvm_shell "$DOWNLOAD_TIMEOUT" "npm --fetch-retries=2 --fetch-timeout=300000 install -g '$package@latest'" || return $?
+    nvm_shell "$DOWNLOAD_TIMEOUT" "pnpm add -g '$package@latest'" || return $?
   fi
   nvm_shell 120 "command -v '$command_name' && ('$command_name' --version || '$command_name' -v || true)"
 }
 
 install_codex_cli() {
-  npm_global_install "@openai/codex" "codex"
+  pnpm_global_install "@openai/codex" "codex"
 }
 
 install_claude_cli() {
@@ -43,10 +43,10 @@ export PATH="$HOME/.local/bin:$PATH"'
         return 0
       fi
       log_warn "Claude native installer failed; trying npm package fallback."
-      npm_global_install "@anthropic-ai/claude-code" "claude"
+      pnpm_global_install "@anthropic-ai/claude-code" "claude"
       ;;
     npm)
-      npm_global_install "@anthropic-ai/claude-code" "claude"
+      pnpm_global_install "@anthropic-ai/claude-code" "claude"
       ;;
     *)
       fail_step "Unsupported CLAUDE_INSTALL_METHOD=${CLAUDE_INSTALL_METHOD:-}"

@@ -8,17 +8,32 @@ install_fcitx5() {
     return $?
   fi
 
-  apt_install \
-    fcitx5 \
-    fcitx5-chinese-addons \
-    fcitx5-config-qt \
-    fcitx5-frontend-gtk2 \
-    fcitx5-frontend-gtk3 \
-    fcitx5-frontend-gtk4 \
-    fcitx5-frontend-qt5 \
-    fcitx5-frontend-qt6 \
-    fonts-noto-cjk \
-    im-config || return $?
+  local -a pkgs=(
+    fcitx5
+    fcitx5-chinese-addons
+    fcitx5-config-qt
+    fcitx5-frontend-gtk3
+    fcitx5-frontend-gtk4
+    fcitx5-frontend-qt5
+    fcitx5-frontend-qt6
+    fonts-noto-cjk
+    im-config
+  )
+
+  local os_version=""
+  if [[ -r /etc/os-release ]]; then
+    # shellcheck disable=SC1091
+    . /etc/os-release
+    os_version="${VERSION_ID:-}"
+  fi
+
+  if [[ "$os_version" != "24.10" && "$os_version" != "26.04" ]]; then
+    if is_dry_run || apt-cache show fcitx5-frontend-gtk2 >/dev/null 2>&1; then
+      pkgs+=(fcitx5-frontend-gtk2)
+    fi
+  fi
+
+  apt_install "${pkgs[@]}" || return $?
 
   run_user_shell 120 'im-config -n fcitx5 || true'
 
