@@ -40,7 +40,15 @@ install_wechat() {
 }
 
 install_clash_verge() {
-  if ! is_dry_run && { command_exists clash-verge || command_exists clash-verge-service; }; then
+  if ! is_dry_run && clash_verge_installed; then
+    if [[ "${CLASH_VERGE_CONFIGURE_PROXY_ENV:-1}" == "1" ]]; then
+      if clash_verge_proxy_env_configured; then
+        skip_step "Clash Verge and proxy environment are already configured."
+        return $?
+      fi
+      configure_clash_verge_proxy_env || return $?
+      return 0
+    fi
     skip_step "Clash Verge is already installed."
     return $?
   fi
@@ -62,7 +70,8 @@ install_clash_verge() {
       return $?
     fi
     apt_install ca-certificates curl || return $?
-    install_deb_from_url clash-verge "$CLASH_VERGE_DEB_URL" "${CLASH_VERGE_DEB_SHA256:-}"
+    install_deb_from_url clash-verge "$CLASH_VERGE_DEB_URL" "${CLASH_VERGE_DEB_SHA256:-}" || return $?
+    configure_clash_verge_proxy_env
     return $?
   fi
 
@@ -77,12 +86,18 @@ install_clash_verge() {
 
   if is_dry_run; then
     log_info "Would resolve latest Clash Verge Rev .deb from GitHub because CLASH_VERGE_ALLOW_LATEST=1."
-    return 0
+    configure_clash_verge_proxy_env
+    return $?
   fi
 
   apt_install ca-certificates curl python3 || return $?
   url="$(github_latest_asset_url clash-verge-rev/clash-verge-rev "$pattern")" || return $?
-  install_deb_from_url clash-verge "$url" "${CLASH_VERGE_DEB_SHA256:-}"
+  install_deb_from_url clash-verge "$url" "${CLASH_VERGE_DEB_SHA256:-}" || return $?
+  configure_clash_verge_proxy_env
+}
+
+clash_verge_installed() {
+  command_exists clash-verge || command_exists clash-verge-service
 }
 
 install_youdao_note() {

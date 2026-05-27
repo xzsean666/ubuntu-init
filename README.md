@@ -115,6 +115,26 @@ NAVICAT_DEB_URL="https://..." NAVICAT_DEB_SHA256="..." ./bootstrap.sh --navicat
 
 Set `ALLOW_UNVERIFIED_DEB=1` only when you intentionally accept installing a downloaded package without hash verification. For Clash Verge, automatic latest-release resolution is disabled unless `CLASH_VERGE_ALLOW_LATEST=1` is set.
 
+When Clash Verge is installed, the script also configures system proxy environment variables for the default mixed port `7897`:
+
+```text
+/etc/environment:
+http_proxy="http://127.0.0.1:7897"
+https_proxy="http://127.0.0.1:7897"
+all_proxy="socks5://127.0.0.1:7897"
+no_proxy="localhost,127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
+/etc/sudoers.d/90-ubuntu-bootstrap-proxy-env:
+Defaults env_keep += "http_proxy https_proxy all_proxy no_proxy"
+```
+
+Override or disable that behavior:
+
+```bash
+CLASH_VERGE_PROXY_PORT=7890 ./bootstrap.sh --clash
+CLASH_VERGE_CONFIGURE_PROXY_ENV=0 ./bootstrap.sh --clash
+```
+
 ## China Network Behavior
 
 The script detects the current public IP country unless disabled. If the detected country is `CN`, it configures:

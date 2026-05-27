@@ -208,6 +208,7 @@ source_required "$SCRIPT_DIR/install/gh.sh"
 source_required "$SCRIPT_DIR/install/ai_cli.sh"
 source_required "$SCRIPT_DIR/install/desktop.sh"
 source_required "$SCRIPT_DIR/install/baota.sh"
+source_required "$SCRIPT_DIR/install/proxy_env.sh"
 source_required "$SCRIPT_DIR/install/desktop_extras.sh"
 
 build_plan() {

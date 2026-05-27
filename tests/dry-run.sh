@@ -40,6 +40,7 @@ run_ok server-cn env UBUNTU_BOOTSTRAP_COUNTRY=CN "$ROOT_DIR/bootstrap.sh" --serv
 run_ok server-baota env UBUNTU_BOOTSTRAP_COUNTRY=CN "$ROOT_DIR/bootstrap.sh" --server --baota --dry-run --strict --log-file "$TMP_DIR/test-server-baota.log"
 run_ok custom-us env UBUNTU_BOOTSTRAP_COUNTRY=US "$ROOT_DIR/bootstrap.sh" --only docker,node,pnpm,python,uv,gh,codex,claude,antigravity --dry-run --strict --log-file "$TMP_DIR/test-custom.log"
 run_ok extras env UBUNTU_BOOTSTRAP_COUNTRY=US "$ROOT_DIR/bootstrap.sh" --only slack,wechat,clash,youdao,navicat --dry-run --strict --log-file "$TMP_DIR/test-extras.log"
+run_ok clash-proxy env UBUNTU_BOOTSTRAP_COUNTRY=US ALLOW_UNVERIFIED_DEB=1 CLASH_VERGE_DEB_URL=https://example.com/clash-verge.deb "$ROOT_DIR/bootstrap.sh" --only clash --dry-run --strict --log-file "$TMP_DIR/test-clash-proxy.log"
 run_ok direct-debs env UBUNTU_BOOTSTRAP_COUNTRY=US ALLOW_UNVERIFIED_DEB=1 YOUDAO_DEB_URL=https://example.com/youdao.deb NAVICAT_DEB_URL=https://example.com/navicat.deb "$ROOT_DIR/bootstrap.sh" --only youdao,navicat --dry-run --strict --log-file "$TMP_DIR/test-direct-debs.log"
 run_ok ssh-key env UBUNTU_BOOTSTRAP_COUNTRY=US "$ROOT_DIR/bootstrap.sh" --only ssh --ssh-key "$(cat "$TMP_DIR/test_key.pub")" --dry-run --strict --log-file "$TMP_DIR/test-ssh-key.log"
 
