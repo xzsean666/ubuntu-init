@@ -20,17 +20,8 @@ install_fcitx5() {
     im-config
   )
 
-  local os_version=""
-  if [[ -r /etc/os-release ]]; then
-    # shellcheck disable=SC1091
-    . /etc/os-release
-    os_version="${VERSION_ID:-}"
-  fi
-
-  if [[ "$os_version" != "24.10" && "$os_version" != "26.04" ]]; then
-    if is_dry_run || apt-cache show fcitx5-frontend-gtk2 >/dev/null 2>&1; then
-      pkgs+=(fcitx5-frontend-gtk2)
-    fi
+  if apt-cache show fcitx5-frontend-gtk2 >/dev/null 2>&1; then
+    pkgs+=(fcitx5-frontend-gtk2)
   fi
 
   apt_install "${pkgs[@]}" || return $?

@@ -307,13 +307,6 @@ main() {
   fi
   mapfile -t plan <<<"$plan_output"
 
-  log_info "Selected mode: ${MODE:-custom}"
-  log_info "Target user: $TARGET_USER"
-  log_info "Plan: ${plan[*]}"
-  if is_dry_run; then
-    log_warn "Dry-run mode: commands will be logged but not executed."
-  fi
-
   if [[ "$TARGET_USER" == "root" && "${ALLOW_ROOT_USER_TOOLS:-0}" != "1" ]]; then
     local module
     for module in "${plan[@]}"; do
@@ -322,6 +315,13 @@ main() {
         return 2
       fi
     done
+  fi
+
+  log_info "Selected mode: ${MODE:-custom}"
+  log_info "Target user: $TARGET_USER"
+  log_info "Plan: ${plan[*]}"
+  if is_dry_run; then
+    log_warn "Dry-run mode: commands will be logged but not executed."
   fi
 
   local module

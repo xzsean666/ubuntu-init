@@ -30,7 +30,7 @@ install_wechat() {
     return $?
   fi
 
-  url="${WECHAT_DEB_URL:-https://dldir1.qq.com/weixin/Universal/Linux/WeChatLinux_x86_64.deb}"
+  url="${WECHAT_DEB_URL:-https://dldir1v6.qq.com/weixin/Universal/Linux/WeChatLinux_x86_64.deb}"
   if [[ -z "${WECHAT_DEB_SHA256:-}" && "${ALLOW_UNVERIFIED_DEB:-0}" != "1" ]]; then
     skip_step "Set WECHAT_DEB_SHA256 to install WeChat, or ALLOW_UNVERIFIED_DEB=1 to install without hash verification."
     return $?

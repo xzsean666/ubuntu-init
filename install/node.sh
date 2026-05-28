@@ -73,7 +73,7 @@ install_pnpm() {
     return $?
   fi
 
-  nvm_shell 900 'npm --fetch-retries=2 --fetch-timeout=300000 install --global corepack@latest && corepack enable pnpm && corepack prepare pnpm@latest --activate || npm --fetch-retries=2 --fetch-timeout=300000 install -g pnpm@latest' || return $?
+  nvm_shell 900 'npm --fetch-retries=2 --fetch-timeout=300000 install -g pnpm@latest || (npm --fetch-retries=2 --fetch-timeout=300000 install --global corepack@latest && corepack enable pnpm && corepack prepare pnpm@latest --activate)' || return $?
 
   if is_china_network; then
     nvm_shell 120 'pnpm config get registry | grep -qx "https://registry.npmjs.org/" && pnpm config set registry https://registry.npmmirror.com || true'

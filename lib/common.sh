@@ -352,7 +352,12 @@ apt_install() {
 download_to() {
   local url="$1"
   local dest="$2"
+  local saved_retry="$RETRY_COUNT"
+  RETRY_COUNT=1
   run_cmd "$DOWNLOAD_TIMEOUT" curl -fsSL --retry 2 --retry-delay 2 --connect-timeout 10 --max-time "$DOWNLOAD_TIMEOUT" -o "$dest" "$url"
+  local rc=$?
+  RETRY_COUNT="$saved_retry"
+  return "$rc"
 }
 
 install_deb_from_url() {
@@ -511,8 +516,14 @@ ensure_country_detected() {
     if [[ -z "$country" ]]; then
       country="$(timeout 8 curl -fsSL --connect-timeout 4 --max-time 6 https://ifconfig.co/country-iso 2>/dev/null | tr -dc '[:upper:]' | head -c 2 || true)"
     fi
+    if [[ -z "$country" ]]; then
+      country="$(timeout 8 curl -fsSL --connect-timeout 4 --max-time 6 'https://ip-api.com/line/?fields=countryCode' 2>/dev/null | tr -dc '[:upper:]' | head -c 2 || true)"
+    fi
   elif command_exists wget; then
     country="$(timeout 8 wget -qO- https://ipapi.co/country/ 2>/dev/null | tr -dc '[:upper:]' | head -c 2 || true)"
+    if [[ -z "$country" ]]; then
+      country="$(timeout 8 wget -qO- 'https://ip-api.com/line/?fields=countryCode' 2>/dev/null | tr -dc '[:upper:]' | head -c 2 || true)"
+    fi
   fi
 
   COUNTRY_CODE="${country:-unknown}"
@@ -680,7 +691,6 @@ print_summary() {
     for entry in "${FAILED_STEPS[@]}"; do
       IFS='|' read -r name reason <<<"$entry"
       echo " - [FAILED] $name - $reason"
-      echo "   log: $LOG_FILE"
     done
   fi
 
